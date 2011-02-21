@@ -1,0 +1,1 @@
+/home/echo/dwm/config.h
