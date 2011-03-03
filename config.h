@@ -14,13 +14,13 @@ static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
 
 /* tagging */
-static const char *tags[] = { "www", "dev", "ssh", "irc", "term", "media", 
-"misc" };
+static const char *tags[] = { "001", "010", "011", "100", "101", "110", 
+"111" };
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Pidgin",   NULL,	  NULL,	      7,	    True,	 -1 },
-};
+	 { "Pidgin",   NULL,	  NULL,	      0,	    True,	 -1 },
+ };
 
 /* layout(s) */
 static const float mfact      = 0.55; /* factor of master area size [0.05..0.95] */
