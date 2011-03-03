@@ -12,6 +12,9 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
+static const Bool focusonclick      = True;     /* Change focus only on click */
+static const Bool systray_enable = True;
+static const int systray_spacing = 1;
 
 /* tagging */
 static const char *tags[] = { "001", "010", "011", "100", "101", "110", 
@@ -19,7 +22,8 @@ static const char *tags[] = { "001", "010", "011", "100", "101", "110",
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
-	 { "Pidgin",   NULL,	  NULL,	      0,	    True,	 -1 },
+	 { "Gimp",     NULL,       NULL,       0,            True,        -1 },
+	 { "Pidgin",   NULL,	   NULL,       0,	     True,	  -1 },
  };
 
 /* layout(s) */
@@ -27,6 +31,7 @@ static const float mfact      = 0.55; /* factor of master area size [0.05..0.95]
 static const Bool resizehints = False; /* True means respect size hints in 
 tiled resizals */
 
+#include "fibonacci.c"
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },    /* first entry is default */
@@ -34,6 +39,8 @@ static const Layout layouts[] = {
 	{ "[M]",      monocle },
  	{ "TTT",      bstack },
  	{ "===",      bstackhoriz },
+        { "[@]",      spiral },
+        { "[\\]",     dwindle },
 };
 
 /* key definitions */
@@ -71,6 +78,8 @@ static Key keys[] = {
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
         { MODKEY,                       XK_n,      setlayout,      {.v = &layouts[3]} },
         { MODKEY,                       XK_x,      setlayout,      {.v = &layouts[4]} },
+        { MODKEY,                       XK_s,      setlayout,      {.v = &layouts[5]} },
+        { MODKEY,                       XK_d,      setlayout,      {.v = &layouts[6]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
