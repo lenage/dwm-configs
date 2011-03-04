@@ -259,6 +259,9 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 
+static void nextlayout(const Arg *arg);
+static void prevlayout(const Arg *arg);
+
 static Bool systray_acquire(void);
 static void systray_add(Window win);
 static void systray_del(Systray *s);
@@ -2191,6 +2194,26 @@ int
 xerrorstart(Display *dpy, XErrorEvent *ee) {
 	otherwm = True;
 	return -1;
+}
+
+void
+nextlayout(const Arg *arg) {
+        Layout *l;
+        for (l=(Layout *)layouts;l != selmon->lt[selmon->sellt];l++);
+        if (l->symbol && (l + 1)->symbol)
+                setlayout(&((Arg) { .v = (l + 1) }));
+        else
+                setlayout(&((Arg) { .v = layouts }));
+}
+
+void
+prevlayout(const Arg *arg) {
+        Layout *l;
+        for (l=(Layout *)layouts;l != selmon->lt[selmon->sellt];l++);
+        if (l != layouts && (l - 1)->symbol)
+                setlayout(&((Arg) { .v = (l - 1) }));
+        else
+                setlayout(&((Arg) { .v = &layouts[LENGTH(layouts) - 2] }));
 }
 
 void
