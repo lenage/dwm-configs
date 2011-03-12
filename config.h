@@ -6,8 +6,8 @@ static const char normbordercolor[] = "#34a0d8";
 static const char normbgcolor[]     = "#2a2a2a";
 static const char normfgcolor[]     = "#888888";
 static const char selbordercolor[]  = "#34a0d8";
-static const char selbgcolor[]      = "#2a2a2a";
-static const char selfgcolor[]      = "#ffffff";
+static const char selbgcolor[]      = "#777777";
+static const char selfgcolor[]      = "#4b4b4b";
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const Bool showbar           = True;     /* False means no bar */
@@ -17,8 +17,8 @@ static const Bool systray_enable = True;
 static const int systray_spacing = 1;
 
 /* tagging */
-static const char *tags[] = { "001", "010", "011", "100", "101", "110", 
-"111" };
+static const char *tags[] = { "..:", ".:.", ".::", ":..", ":.:", "::.", 
+":::" };
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */

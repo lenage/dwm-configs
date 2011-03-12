@@ -1,0 +1,26 @@
+--- dwm.c	Wed Nov 25 13:56:17 2009 +0000
++++ dwm.c	Sun Mar 21 00:38:45 2010 +0100
+@@ -791,14 +791,16 @@
+ 
+ 	if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
+ 		return;
+-	if((m = wintomon(ev->window)) && m != selmon) {
+-		unfocus(selmon->sel);
+-		selmon = m;
++	if (!focusonclick) {
++		if((m = wintomon(ev->window)) && m != selmon) {
++			unfocus(selmon->sel, False);
++			selmon = m;
++		}
++		if((c = wintoclient(ev->window)))
++			focus(c);
++		else
++			focus(NULL);
+ 	}
+-	if((c = wintoclient(ev->window)))
+-		focus(c);
+-	else
+-		focus(NULL);
+ }
+ 
+ void
