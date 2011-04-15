@@ -17,13 +17,16 @@ static const Bool systray_enable = True;
 static const int systray_spacing = 1;
 
 /* tagging */
-static const char *tags[] = { "..:", ".:.", ".::", ":..", ":.:", "::.", 
-":::" };
+static const char *tags[] = { "..:", ".:.", ".::", ":..", ":.:", "::.", ":::" };
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	 { "Gimp",     NULL,       NULL,       0,            True,        -1 },
 	 { "Pidgin",   NULL,	   NULL,       0,	     True,	  -1 },
+	 { "Eclipse",  NULL,	   NULL,       0,	     True,	  -1 },
+         { "MonoDevelop", NULL,    NULL,       0,            True,        -1 },
+         { "Transmission", NULL,   NULL,       0,            True,        -1 },
+         { "Wicd",     NULL,       NULL,       0,            True,        -1 },
  };
 
 /* layout(s) */
@@ -40,7 +43,7 @@ static const Layout layouts[] = {
  	{ "TTT",      bstack },
  	{ "===",      bstackhoriz },
         { "[@]",      spiral },
-        { "[\\]",     dwindle },
+      /*  { "[\\]",     dwindle }, */
         { .symbol = NULL,   .arrange = NULL },
 
 };
@@ -58,7 +61,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static const char *dmenucmd[] = { "dmenu_run", "-fn", font, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
-static const char *termcmd[]  = { "gnome-terminal" };
+static const char *termcmd[]  = { "sakura" };
 
 #include "movestack.c"
 static Key keys[] = {
