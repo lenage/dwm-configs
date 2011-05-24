@@ -31,7 +31,7 @@ static const Rule rules[] = {
 
 /* layout(s) */
 static const float mfact      = 0.55; /* factor of master area size [0.05..0.95] */
-static const Bool resizehints = False; /* True means respect size hints in 
+static const Bool resizehints = False; /* True means respect size hints in
 tiled resizals */
 
 #include "fibonacci.c"

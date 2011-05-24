@@ -1633,7 +1633,7 @@ setup(void) {
 	initfont(font);
 	sw = DisplayWidth(dpy, screen);
 	sh = DisplayHeight(dpy, screen);
-	bh = dc.h = dc.font.height + 2;  
+	bh = dc.h = dc.font.height + 2;
 	updategeom();
 	/* init atoms */
 	wmatom[WMProtocols] = XInternAtom(dpy, "WM_PROTOCOLS", False);
@@ -2233,7 +2233,7 @@ zoom(const Arg *arg) {
 	arrange(c->mon);
 }
 
-Bool 
+Bool
 systray_acquire(void) {
 	XSetWindowAttributes wattr;
 
@@ -2265,11 +2265,11 @@ systray_acquire(void) {
 		return False;
 	}
 	XSync(dpy, False);
-	
+
 	return True;
 }
 
-void 
+void
 systray_add(Window win) {
 	Systray *s;
 
@@ -2293,7 +2293,7 @@ systray_add(Window win) {
 	return;
 }
 
-void 
+void
 systray_del(Systray *s) {
 	Systray **ss;
 
@@ -2306,7 +2306,7 @@ systray_del(Systray *s) {
 	return;
 }
 
-void 
+void
 systray_freeicons(void) {
 	Systray *i;
 
@@ -2325,7 +2325,7 @@ systray_freeicons(void) {
 	return;
 }
 
-Systray* 
+Systray*
 systray_find(Window win) {
 	Systray *i;
 
@@ -2337,7 +2337,7 @@ systray_find(Window win) {
 	return NULL;
 }
 
-int 
+int
 systray_get_width(void) {
 	int w = 0;
 	Systray *i;
@@ -2350,7 +2350,7 @@ systray_get_width(void) {
 	return w;
 }
 
-void 
+void
 systray_update(void) {
 	Systray *i;
 	Monitor *m;
