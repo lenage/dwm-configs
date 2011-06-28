@@ -12,9 +12,6 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
-static const Bool focusonclick      = True;     /* Change focus only on click */
-static const Bool systray_enable = True;
-static const int systray_spacing = 1;
 
 /* tagging */
 static const char *tags[] = { "..:", ".:.", ".::", ":..", ":.:", "::.", ":::" };
@@ -34,7 +31,6 @@ static const float mfact      = 0.55; /* factor of master area size [0.05..0.95]
 static const Bool resizehints = False; /* True means respect size hints in
 tiled resizals */
 
-#include "fibonacci.c"
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },    /* first entry is default */
@@ -42,7 +38,7 @@ static const Layout layouts[] = {
 	{ "[M]",      monocle },
  	{ "TTT",      bstack },
  	{ "===",      bstackhoriz },
-        { "[@]",      spiral },
+//        { "[@]",      spiral },
       /*  { "[\\]",     dwindle }, */
         { .symbol = NULL,   .arrange = NULL },
 
