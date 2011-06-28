@@ -54,11 +54,17 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (textnw(X, strlen(X)) + dc.font.height)
 
+/*For Systray*/
+#define XEMBED_EMBEDDED_NOTIFY  0
+#define IFREE(x)                if(x) free(x)
+#define zcalloc(size)           calloc(1, (size))
+
+
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast };        /* cursor */
 enum { ColBorder, ColFG, ColBG, ColLast };              /* color */
 enum { NetSupported, NetWMName, NetWMState,
-       NetWMFullscreen, NetLast };                      /* EWMH atoms */
+       NetWMFullscreen, NetSystemTray, KdeWMSysTrayWindow, NetLast };                      /* EWMH atoms */
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast };             /* clicks */
@@ -150,6 +156,15 @@ typedef struct {
 	Bool isfloating;
 	int monitor;
 } Rule;
+
+/*For Systray*/
+typedef struct Systray Systray;
+struct Systray {
+   Window win;
+   XRectangle geo;
+   Systray *next, *prev;
+};
+
 
 /* function declarations */
 static void applyrules(Client *c);
@@ -245,6 +260,15 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
+/*For Systray*/
+static Bool systray_acquire(void);
+static void systray_add(Window win);
+static void systray_del(Systray *s);
+static void systray_freeicons(void);
+static Systray* systray_find(Window win);
+static void systray_update(void);
+/*static int systray_get_width(void);*/
+
 
 static void nextlayout(const Arg *arg);
 static void prevlayout(const Arg *arg);
@@ -280,6 +304,10 @@ static Display *dpy;
 static DC dc;
 static Monitor *mons = NULL, *selmon = NULL;
 static Window root;
+
+/*For systray*/
+static Systray *trayicons;
+static Window traywin;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -634,9 +662,15 @@ void
 destroynotify(XEvent *e) {
 	Client *c;
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
+  Systray *s;
 
 	if((c = wintoclient(ev->window)))
 		unmanage(c, True);
+   else if((s = systray_find(ev->window))){
+      systray_del(s);
+      systray_update();
+   }
+
 }
 
 void
@@ -857,6 +891,10 @@ enternotify(XEvent *e) {
 	Client *c;
 	Monitor *m;
 	XCrossingEvent *ev = &e->xcrossing;
+
+  /* Don't handle EnterNotify event if it's about systray */
+  if(systray_find(ev->window) || ev->window == traywin)
+          return;
 
 	if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
 		return;
@@ -1163,6 +1201,15 @@ manage(Window w, XWindowAttributes *wa) {
 	Window trans = None;
 	XWindowChanges wc;
 
+	/*For kde3 apps*/
+	char kdetmp[6];
+  if ( gettextprop(w, netatom[KdeWMSysTrayWindow] , kdetmp, 6))
+  {
+        systray_add(w);
+        systray_update();
+        return;
+  }
+
 	if(!(c = malloc(sizeof(Client))))
 		die("fatal: could not malloc() %u bytes\n", sizeof(Client));
 	*c = cz;
@@ -1391,6 +1438,13 @@ clientmessage(XEvent *e) {
 			arrange(c->mon);
 		}
 	}
+	if(cme->window == traywin) {
+      if(cme->data.l[1] == XEMBED_EMBEDDED_NOTIFY){
+         systray_add(cme->data.l[2]);
+         systray_update();
+      }
+   }
+
 }
 
 void
@@ -1602,6 +1656,9 @@ setup(void) {
 	netatom[NetWMName] = XInternAtom(dpy, "_NET_WM_NAME", False);
 	netatom[NetWMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
 	netatom[NetWMFullscreen] = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
+  netatom[NetSystemTray] = XInternAtom(dpy, "_NET_SYSTEM_TRAY_S0", False);
+  netatom[KdeWMSysTrayWindow] = XInternAtom(dpy, "_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR", False);
+
 	/* init cursors */
 	cursor[CurNormal] = XCreateFontCursor(dpy, XC_left_ptr);
 	cursor[CurResize] = XCreateFontCursor(dpy, XC_sizing);
@@ -1888,6 +1945,7 @@ updatebars(void) {
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]);
 		XMapRaised(dpy, m->barwin);
 	}
+	systray_acquire();
 }
 
 void
@@ -2064,6 +2122,8 @@ updatestatus(void) {
 	if(!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
 		strcpy(stext, "dwm-"VERSION);
 	drawbar(selmon);
+	systray_acquire();
+
 }
 
 void
@@ -2207,3 +2267,155 @@ main(int argc, char *argv[]) {
 	XCloseDisplay(dpy);
 	return 0;
 }
+/*For Systray*/
+/*---Systray ---*/
+Bool systray_acquire(void) {
+    XSetWindowAttributes wattr;
+    
+    if(!systray_enable || traywin) return False;
+    
+    if(XGetSelectionOwner(dpy, netatom[NetSystemTray]) != None) {
+        fprintf(stderr, "Can't initialize system tray: owned by another process\n");      
+        return False;
+    }   
+    
+    // Init traywin window
+    wattr.event_mask        = ButtonPressMask | ExposureMask;
+    wattr.override_redirect = True;
+    wattr.background_pixmap = ParentRelative;
+    wattr.background_pixel  = dc.norm[ColBG];
+    
+
+    traywin = XCreateSimpleWindow(dpy, root, 0, 0, 1, 1, 0, 0, dc.norm[ColBG]);
+    
+
+    XChangeWindowAttributes(dpy, traywin, CWEventMask | CWOverrideRedirect | CWBackPixel, &wattr);
+    XSelectInput(dpy, traywin, KeyPressMask | ButtonPressMask);
+    
+    XMapRaised(dpy, traywin);
+    
+    XSetSelectionOwner(dpy, netatom[NetSystemTray], traywin, CurrentTime);
+    
+    if(XGetSelectionOwner(dpy, netatom[NetSystemTray]) != traywin) {
+        systray_freeicons();
+        fprintf(stderr, "System tray: can't get systray manager\n");
+        return False;
+    }   
+    XSync(dpy, False);
+
+    return True;
+}
+
+void systray_add(Window win) {
+    Systray *s;
+
+    if(!systray_enable) return;
+    if(systray_find(win)) return;
+
+    s = zcalloc(sizeof(Systray));
+    s->win = win;
+
+    s->geo.height = bh;
+    s->geo.width  = bh;
+
+    XSelectInput(dpy, s->win, StructureNotifyMask | PropertyChangeMask| EnterWindowMask | FocusChangeMask);
+    XReparentWindow(dpy, s->win, traywin, 0, 0);
+
+    // Attach
+    if(trayicons) trayicons->prev = s;
+
+    s->next = trayicons;
+    trayicons = s;
+
+    return;
+}
+
+void systray_del(Systray *s) {
+    Systray **ss;
+
+    if(!systray_enable) return;
+
+    for(ss = &trayicons; *ss && *ss != s; ss = &(*ss)->next);
+    *ss = s->next;
+
+    IFREE(s);
+    return;
+}
+
+void systray_freeicons(void) {
+    Systray *i;
+
+    if(!systray_enable) return;
+
+    for(i = trayicons; i; i = i->next) {
+        XUnmapWindow(dpy, i->win);
+        XReparentWindow(dpy, i->win, root, 0, 0);
+        IFREE(i);
+    }
+
+    XSetSelectionOwner(dpy, netatom[NetSystemTray], None, CurrentTime);
+    XDestroyWindow(dpy, traywin);
+    XSync(dpy, 0);
+
+    return;
+}
+
+Systray* systray_find(Window win) {
+    Systray *i;
+
+    if(!systray_enable) return NULL;
+
+    for(i = trayicons; i; i = i->next)
+        if(i->win == win) return i;
+
+    return NULL;
+}
+/*
+int systray_get_width(void) {
+    int w = 0;
+    Systray *i;
+
+    if(!systray_enable) return 0;
+
+    for(i = trayicons; i; i = i->next)
+        w += i->geo.width + systray_spacing + 1;
+
+    return w;
+}
+*/
+void systray_update(void) {
+    Systray *i;
+    //Monitor *m;
+    int x = 1;
+    int pos = blw;
+
+    if(!systray_enable) return;
+
+ /*
+   for(m = mons; m; m = m -> next){
+        if(m->primary == 1) pos = m -> ww;
+    }*/
+//      pos = mons -> ww - W_bar_reserved;
+    pos = mons -> ww ;
+
+
+    if(!trayicons) {
+        pos -= 1;
+        XMoveResizeWindow(dpy, traywin, pos, 0, 1, 1);
+        return;
+    }
+
+    for(i = trayicons; i; i = i->next) {
+        XMapWindow(dpy, i->win);
+        XMoveResizeWindow(dpy, i->win, (i->geo.x = x), 0, i->geo.width, i->geo.height);
+
+        x += i->geo.width + systray_spacing;
+    }
+
+    pos -= x;
+    XMoveResizeWindow(dpy, traywin, pos, 0, x, bh);
+
+    return;
+}
+
+

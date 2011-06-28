@@ -12,6 +12,8 @@ static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
+static unsigned char systray_spacing= 1;
+static Bool systray_enable          = True;
 
 /* tagging */
 static const char *tags[] = { "..:", ".:.", ".::", ":..", ":.:", "::.", ":::" };
