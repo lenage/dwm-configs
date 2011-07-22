@@ -2,12 +2,12 @@
 
 /* appearance */
 static const char font[]            = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
-static const char normbordercolor[] = "#34a0d8";
-static const char normbgcolor[]     = "#2a2a2a";
-static const char normfgcolor[]     = "#888888";
-static const char selbordercolor[]  = "#34a0d8";
-static const char selbgcolor[]      = "#777777";
-static const char selfgcolor[]      = "#4b4b4b";
+static const char normbordercolor[] = "#212121";
+static const char normbgcolor[] = "#030303";
+static const char normfgcolor[] = "#696969";
+static const char selbordercolor[] = "#696969";
+static const char selbgcolor[] = "#030303";
+static const char selfgcolor[] = "#E0E0E0";
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const Bool showbar           = True;     /* False means no bar */
@@ -26,6 +26,8 @@ static const Rule rules[] = {
          { "MonoDevelop", NULL,    NULL,       0,            True,        -1 },
          { "Transmission", NULL,   NULL,       0,            True,        -1 },
          { "Wicd",     NULL,       NULL,       0,            True,        -1 },
+	 { "minecraft", NULL,	   NULL,       0,	     True,	  -1 },
+	 { "google-musicmanager", NULL, NULL,  0,	     True,	  -1 }, 
  };
 
 /* layout(s) */
